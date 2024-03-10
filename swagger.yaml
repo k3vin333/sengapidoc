@@ -1,253 +1,296 @@
+---
 openapi: 3.0.0
 info:
   title: Your API
   version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/Z5450330/API-validation/1.0.0
+  description: SwaggerHub API Auto Mocking
 paths:
   /:
     get:
       summary: Check aliveness of service
-      description: Check if the service is alive by returning a "hello spring" message.
+      description: Check if the service is alive
       responses:
-        '200':
-          description: OK
+        "200":
+          description: Success
           content:
             text/plain:
-              schema:
-                type: string
-              example: "hello spring"
-
+              example: hello spring
   /api/validate/json:
     post:
       summary: Validate invoice as JSON
-      description: Validate invoice, showing errors as a JSON file.
-      requestBody:
+      description: Validate invoice and return errors as JSON
+      parameters:
+      - name: Content-Type
+        in: header
+        description: The content type of the request
         required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: application/xml
+      - name: Authorization
+        in: header
+        description: The user's authentication token
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: user_token
+      requestBody:
         content:
           application/xml:
             schema:
-              type: string
+              $ref: '#/components/schemas/Invoice'
             examples:
               validXML:
                 value: |
                   <!-- Your valid XML content goes here -->
-              invalidXML:
-                value: |
-                  <InvalidXML>Not conforming to the schema</InvalidXML>
+        required: true
       responses:
-        '200':
+        "200":
           description: Successful validation
           content:
             application/json:
-              examples:
-                example1:
-                  value:
-                    successful: true
-                    firedAssertionErrors:
-                      AUNZ_PEPPOL_1_1_10: []
-                      AUNZ-UBL_1_1_10: []
-        '201':
-          description: Validation failure - XML not well formed
+              example:
+                successful: true
+                firedAssertionErrors:
+                  AUNZ_PEPPOL_1_1_10: []
+                  AUNZ-UBL_1_1_10: []
+        "201":
+          description: Validation failure - XML not well-formed
           content:
             application/json:
-              examples:
-                example2:
-                  value:
-                    successful: false
-                    reason: 'XML is not well formed'
-                    details: '<output from document parser>'
-        '202':
-          description: Validation failure - XML doesn’t follow XSD schema or business rules
+              example:
+                successful: false
+                reason: XML is not well formed
+                details: <output from document parser>
+        "202":
+          description: Validation failure - XML doesn’t follow XSD schema
           content:
             application/json:
-              examples:
-                example3:
-                  value:
-                    successful: false
-                    reason: 'XML failed schema validation or business rule validation'
-                    details: '<output from XSD validator or business rule validator>'
-        '401':
+              example:
+                successful: false
+                reason: XML failed schema validation
+                details: <output from XSD validator>
+        "401":
           description: Unauthorized - Invalid or expired token
           content:
             application/json:
               example:
-                error: "Invalid or expired token"
-        '500':
+                error: Invalid or expired token
+        "500":
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Internal server error. (Could occur when a user enters null in either field)"
-
+                message: "Internal server error. (Should not happen, but just in case it does)"
   /api/validate/html:
     post:
-      summary: Validate invoice as HTML
-      description: Validate invoice, showing errors as an HTML file.
-      requestBody:
+      summary: "Validate invoice, showing errors as HTML"
+      description: Validate invoice and return errors as HTML
+      parameters:
+      - name: Content-Type
+        in: header
+        description: The content type of the request
         required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: application/xml
+      - name: Authorization
+        in: header
+        description: The user's authentication token
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: user_token
+      requestBody:
         content:
           application/xml:
             schema:
-              type: string
+              $ref: '#/components/schemas/Invoice'
+            examples:
+              validXML:
+                value: |
+                  <!-- Your valid XML content goes here -->
+        required: true
       responses:
-        '200':
+        "200":
           description: Successful validation
           content:
             text/html:
-              examples:
-                example1:
-                  externalValue: "https://example.com/sample.html"
-        '401':
+              example:
+                htmlFile: HTML representation of the validation report
+        "401":
           description: Unauthorized - Invalid or expired token
           content:
             application/json:
               example:
-                error: "Invalid or expired token"
-        '500':
+                error: Invalid or expired token
+        "500":
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Internal server error. (Could occur when a user enters null in either field)"
-
+                message: "Internal server error. (Should not happen, but just in case it does)"
   /api/validate/pdf:
     post:
-      summary: Validate invoice as PDF
-      description: Validate invoice, showing errors as a PDF file.
-      requestBody:
+      summary: "Validate invoice, showing errors as a PDF"
+      description: Validate invoice and return errors as a PDF
+      parameters:
+      - name: Content-Type
+        in: header
+        description: The content type of the request
         required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: application/xml
+      - name: Authorization
+        in: header
+        description: The user's authentication token
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: user_token
+      requestBody:
         content:
           application/xml:
             schema:
-              type: string
+              $ref: '#/components/schemas/Invoice'
+            examples:
+              validXML:
+                value: |
+                  <!-- Your valid XML content goes here -->
+        required: true
       responses:
-        '200':
+        "200":
           description: Successful validation
           content:
             application/pdf:
-              schema:
-                type: string
-              example: "<PDF content>"
-        '401':
+              example:
+                pdfFile: Binary representation of the PDF file
+        "401":
           description: Unauthorized - Invalid or expired token
           content:
             application/json:
               example:
-                error: "Invalid or expired token"
-        '500':
+                error: Invalid or expired token
+        "500":
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Internal server error. (Could occur when a user enters null in either field)"
-
+                message: "Internal server error. (Should not happen, but just in case it does)"
   /auth/register:
     post:
-      summary: Register a user in the database
-      description: Registers a user in the database.
+      summary: Registers a user in the database
+      description: Register a new user with a username and password.
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-              required:
-                - username
-                - password
-            example:
-              username: "user_name"
-              password: "really_secure_password"
+              $ref: '#/components/schemas/auth_register_body'
+            examples:
+              userRegistration:
+                value: |
+                  {
+                    "username": "user_name",
+                    "password": "really_secure_password"
+                  }
+        required: true
       responses:
-        '200':
-          description: OK
+        "200":
+          description: Successful registration
           content:
             application/json:
               example:
-                token: "user_token"
-        '409':
+                token: user_token
+        "409":
           description: Conflict - Username already exists
           content:
             application/json:
               example:
-                error: "Username already exists"
-        '500':
+                message: Username already exists
+        "500":
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Internal server error. (Could occur when a user enters null in either field)"
-
+                message: "Internal server error. (Should not happen, but just in case it does)"
   /auth/login:
     post:
-      summary: Log a user in if user is already registered within the database
-      description: Logs a user in if user is already registered within the database.
+      summary: Logs a user in if the user is already registered within the database
+      description: Log in with a username and password.
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-              required:
-                - username
-                - password
-            example:
-              username: "user_name"
-              password: "really_secure_password"
+              $ref: '#/components/schemas/auth_login_body'
+            examples:
+              userLogin:
+                value: |
+                  {
+                    "username": "user_name",
+                    "password": "really_secure_password"
+                  }
+        required: true
       responses:
-        '200':
-          description: OK
+        "200":
+          description: Successful login
           content:
             application/json:
               example:
-                token: "user_token"
-        '401':
+                token: user_token
+        "401":
           description: Unauthorized - Invalid username or password
           content:
             application/json:
               example:
-                error: "Invalid username or password"
-        '500':
+                message: Invalid username or password
+        "500":
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Internal server error. (Could occur when a user enters null in either field)"
-
+                message: "Internal server error. (Should not happen, but just in case it does)"
   /auth/logout:
     delete:
-      summary: Log a user out of the service by invalidating their token
-      description: Log a user out of the service by invalidating their token.
+      summary: Logs a user out of the service by invalidating their token
+      description: Logs a user out by invalidating their token
       parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-            format: "Bearer user_token"
+      - name: Authorization
+        in: header
+        description: The user's authentication token
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: user_token
       responses:
-        '200':
-          description: OK
+        "200":
+          description: Logout successful
           content:
             application/json:
               example:
-                message: "Logout successful"
-        '500':
+                message: Logout successful
+        "500":
           description: Internal Server Error
           content:
             application/json:
               example:
-                error: "Internal server error. (Could occur under special circumstances)"
-
-
+                message: "Internal server error. (Should not happen, but just in case it does)"
 components:
   schemas:
     Invoice:
@@ -313,7 +356,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvoiceLine'
-
     InvoicePeriod:
       type: object
       properties:
@@ -323,7 +365,6 @@ components:
         EndDate:
           type: string
           format: date
-
     OrderReference:
       type: object
       properties:
@@ -331,13 +372,11 @@ components:
           type: string
         SalesOrderID:
           type: string
-
     BillingReference:
       type: object
       properties:
         InvoiceDocumentReference:
           $ref: '#/components/schemas/DocumentReference'
-
     DocumentReference:
       type: object
       properties:
@@ -346,7 +385,6 @@ components:
         IssueDate:
           type: string
           format: date
-
     Party:
       type: object
       properties:
@@ -364,19 +402,16 @@ components:
           $ref: '#/components/schemas/PartyLegalEntity'
         Contact:
           $ref: '#/components/schemas/Contact'
-
     PartyIdentification:
       type: object
       properties:
         ID:
           type: string
-
     PartyName:
       type: object
       properties:
         Name:
           type: string
-
     PostalAddress:
       type: object
       properties:
@@ -390,13 +425,11 @@ components:
           type: string
         Country:
           $ref: '#/components/schemas/Country'
-
     Country:
       type: object
       properties:
         IdentificationCode:
           type: string
-
     PartyTaxScheme:
       type: object
       properties:
@@ -404,13 +437,11 @@ components:
           type: string
         TaxScheme:
           $ref: '#/components/schemas/TaxScheme'
-
     TaxScheme:
       type: object
       properties:
         ID:
           type: string
-
     PartyLegalEntity:
       type: object
       properties:
@@ -420,7 +451,6 @@ components:
           type: string
         CompanyLegalForm:
           type: string
-
     Contact:
       type: object
       properties:
@@ -430,7 +460,6 @@ components:
           type: string
         ElectronicMail:
           type: string
-
     Delivery:
       type: object
       properties:
@@ -441,7 +470,6 @@ components:
           $ref: '#/components/schemas/DeliveryLocation'
         DeliveryParty:
           $ref: '#/components/schemas/Party'
-
     DeliveryLocation:
       type: object
       properties:
@@ -449,21 +477,15 @@ components:
           type: string
         Address:
           $ref: '#/components/schemas/PostalAddress'
-
     PaymentMeans:
       type: object
       properties:
         PaymentMeansCode:
-          type: object
-          properties:
-            name:
-              type: string
-          example: "Credit transfer"
+          $ref: '#/components/schemas/PaymentMeans_PaymentMeansCode'
         PaymentID:
           type: string
         PayeeFinancialAccount:
           $ref: '#/components/schemas/PayeeFinancialAccount'
-
     PayeeFinancialAccount:
       type: object
       properties:
@@ -473,19 +495,16 @@ components:
           type: string
         FinancialInstitutionBranch:
           $ref: '#/components/schemas/FinancialInstitutionBranch'
-
     FinancialInstitutionBranch:
       type: object
       properties:
         ID:
           type: string
-
     PaymentTerms:
       type: object
       properties:
         Note:
           type: string
-
     AllowanceCharge:
       type: object
       properties:
@@ -503,7 +522,6 @@ components:
           type: number
         TaxCategory:
           $ref: '#/components/schemas/TaxCategory'
-
     TaxCategory:
       type: object
       properties:
@@ -513,7 +531,6 @@ components:
           type: number
         TaxScheme:
           $ref: '#/components/schemas/TaxScheme'
-
     TaxTotal:
       type: object
       properties:
@@ -521,7 +538,6 @@ components:
           type: number
         TaxSubtotal:
           $ref: '#/components/schemas/TaxSubtotal'
-
     TaxSubtotal:
       type: object
       properties:
@@ -531,7 +547,6 @@ components:
           type: number
         TaxCategory:
           $ref: '#/components/schemas/TaxCategory'
-
     LegalMonetaryTotal:
       type: object
       properties:
@@ -547,7 +562,6 @@ components:
           type: number
         PayableAmount:
           type: number
-
     InvoiceLine:
       type: object
       properties:
@@ -571,7 +585,6 @@ components:
           $ref: '#/components/schemas/Item'
         Price:
           $ref: '#/components/schemas/Price'
-
     InvoicedQuantity:
       type: object
       properties:
@@ -579,13 +592,11 @@ components:
           type: string
         value:
           type: number
-
     OrderLineReference:
       type: object
       properties:
         LineID:
           type: string
-
     Item:
       type: object
       properties:
@@ -605,19 +616,16 @@ components:
           $ref: '#/components/schemas/CommodityClassification'
         ClassifiedTaxCategory:
           $ref: '#/components/schemas/ClassifiedTaxCategory'
-
     BuyersItemIdentification:
       type: object
       properties:
         ID:
           type: string
-
     SellersItemIdentification:
       type: object
       properties:
         ID:
           type: string
-
     StandardItemIdentification:
       type: object
       properties:
@@ -625,13 +633,11 @@ components:
           type: string
         schemeID:
           type: string
-
     CommodityClassification:
       type: object
       properties:
         ItemClassificationCode:
           $ref: '#/components/schemas/ItemClassificationCode'
-
     ItemClassificationCode:
       type: object
       properties:
@@ -639,7 +645,6 @@ components:
           type: string
         value:
           type: string
-
     ClassifiedTaxCategory:
       type: object
       properties:
@@ -649,7 +654,6 @@ components:
           type: number
         TaxScheme:
           $ref: '#/components/schemas/TaxScheme'
-
     Price:
       type: object
       properties:
@@ -657,7 +661,29 @@ components:
           type: number
         AllowanceCharge:
           $ref: '#/components/schemas/AllowanceCharge'
-servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/Z5450330/API-validation/1.0.0
+    auth_register_body:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    auth_login_body:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    PaymentMeans_PaymentMeansCode:
+      type: object
+      properties:
+        name:
+          type: string
+      example: Credit transfer
