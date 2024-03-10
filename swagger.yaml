@@ -3,16 +3,29 @@ info:
   title: Your API
   version: 1.0.0
 paths:
-  /api/validate/xml:
+  /:
+    get:
+      summary: Check aliveness of service
+      description: Check if the service is alive by returning a "hello spring" message.
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "hello spring"
+
+  /api/validate/json:
     post:
-      summary: Validate XML invoice
-      description: Validate invoice in XML format and return errors as a JSON file.
+      summary: Validate invoice as JSON
+      description: Validate invoice, showing errors as a JSON file.
       requestBody:
         required: true
         content:
           application/xml:
             schema:
-              $ref: '#/components/schemas/Invoice'
+              type: string
             examples:
               validXML:
                 value: |
@@ -25,111 +38,112 @@ paths:
           description: Successful validation
           content:
             application/json:
-              example:
-                successful: true
-                firedAssertionErrors:
-                  AUNZ_PEPPOL_1_1_10: []
-                  AUNZ-UBL_1_1_10: []
-        '400':
-          description: Bad Request - Invalid XML data or schema mismatch
+              examples:
+                example1:
+                  value:
+                    successful: true
+                    firedAssertionErrors:
+                      AUNZ_PEPPOL_1_1_10: []
+                      AUNZ-UBL_1_1_10: []
+        '201':
+          description: Validation failure - XML not well formed
+          content:
+            application/json:
+              examples:
+                example2:
+                  value:
+                    successful: false
+                    reason: 'XML is not well formed'
+                    details: '<output from document parser>'
+        '202':
+          description: Validation failure - XML doesn’t follow XSD schema or business rules
+          content:
+            application/json:
+              examples:
+                example3:
+                  value:
+                    successful: false
+                    reason: 'XML failed schema validation or business rule validation'
+                    details: '<output from XSD validator or business rule validator>'
+        '401':
+          description: Unauthorized - Invalid or expired token
           content:
             application/json:
               example:
-                successful: false
-                reason: 'Invalid XML data or schema mismatch'
+                error: "Invalid or expired token"
         '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                message: 'Internal server error. (Should not happen, but just in case it does)'
-      headers:
-        Content-Type: application/xml
+                error: "Internal server error. (Could occur when a user enters null in either field)"
 
   /api/validate/html:
     post:
-      summary: Validate XML invoice and generate HTML report
-      description: Validate invoice in XML format and return errors as an HTML file.
+      summary: Validate invoice as HTML
+      description: Validate invoice, showing errors as an HTML file.
       requestBody:
         required: true
         content:
           application/xml:
             schema:
-              $ref: '#/components/schemas/Invoice'
-            examples:
-              validXML:
-                value: |
-                  <!-- Your valid XML content goes here -->
-              invalidXML:
-                value: |
-                  <InvalidXML>Not conforming to the schema</InvalidXML>
+              type: string
       responses:
         '200':
           description: Successful validation
           content:
             text/html:
-              example:
-                value: '<html>Your HTML report goes here</html>'
-        '400':
-          description: Bad Request - Invalid XML data or schema mismatch
+              examples:
+                example1:
+                  externalValue: "https://example.com/sample.html"
+        '401':
+          description: Unauthorized - Invalid or expired token
           content:
             application/json:
               example:
-                successful: false
-                reason: 'Invalid XML data or schema mismatch'
+                error: "Invalid or expired token"
         '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                message: 'Internal server error. (Should not happen, but just in case it does)'
-      headers:
-        Content-Type: application/xml
+                error: "Internal server error. (Could occur when a user enters null in either field)"
 
   /api/validate/pdf:
     post:
-      summary: Validate XML invoice and generate PDF report
-      description: Validate invoice in XML format and return errors as a PDF file.
+      summary: Validate invoice as PDF
+      description: Validate invoice, showing errors as a PDF file.
       requestBody:
         required: true
         content:
           application/xml:
             schema:
-              $ref: '#/components/schemas/Invoice'
-            examples:
-              validXML:
-                value: |
-                  <!-- Your valid XML content goes here -->
-              invalidXML:
-                value: |
-                  <InvalidXML>Not conforming to the schema</InvalidXML>
+              type: string
       responses:
         '200':
           description: Successful validation
           content:
             application/pdf:
-              example:
-                binaryContent: '<link to a sample PDF file or description>'
-        '400':
-          description: Bad Request - Invalid XML data or schema mismatch
+              schema:
+                type: string
+              example: "<PDF content>"
+        '401':
+          description: Unauthorized - Invalid or expired token
           content:
             application/json:
               example:
-                successful: false
-                reason: 'Invalid XML data or schema mismatch'
+                error: "Invalid or expired token"
         '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                message: 'Internal server error. (Should not happen, but just in case it does)'
-      headers:
-        Content-Type: application/xml
+                error: "Internal server error. (Could occur when a user enters null in either field)"
 
   /auth/register:
     post:
-      summary: Register a new user
-      description: Register a user in the database.
+      summary: Register a user in the database
+      description: Registers a user in the database.
       requestBody:
         required: true
         content:
@@ -141,33 +155,36 @@ paths:
                   type: string
                 password:
                   type: string
+              required:
+                - username
+                - password
             example:
               username: "user_name"
               password: "really_secure_password"
       responses:
         '200':
-          description: Successful registration
+          description: OK
           content:
             application/json:
               example:
-                token: '<user_token>'
+                token: "user_token"
         '409':
           description: Conflict - Username already exists
           content:
             application/json:
               example:
-                error: 'Username already exists'
+                error: "Username already exists"
         '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                message: 'Internal server error. (Could occur when a user enters null in either fields)'
+                error: "Internal server error. (Could occur when a user enters null in either field)"
 
   /auth/login:
     post:
-      summary: Log in a user
-      description: Log in if the user is already registered within the database.
+      summary: Log a user in if user is already registered within the database
+      description: Logs a user in if user is already registered within the database.
       requestBody:
         required: true
         content:
@@ -179,45 +196,56 @@ paths:
                   type: string
                 password:
                   type: string
+              required:
+                - username
+                - password
             example:
               username: "user_name"
               password: "really_secure_password"
       responses:
         '200':
-          description: Successful login
+          description: OK
           content:
             application/json:
               example:
-                token: '<user_token>'
+                token: "user_token"
         '401':
           description: Unauthorized - Invalid username or password
           content:
             application/json:
               example:
-                error: 'Invalid username or password'
+                error: "Invalid username or password"
         '500':
           description: Internal Server Error
           content:
             application/json:
               example:
-                message: 'Internal server error. (Could occur when a user enters null in either fields)'
+                error: "Internal server error. (Could occur when a user enters null in either field)"
 
   /auth/logout:
-    post:
-      summary: Log out a user
-      description: Log out of the service by invalidating the user's token.
+    delete:
+      summary: Log a user out of the service by invalidating their token
+      description: Log a user out of the service by invalidating their token.
       parameters:
         - name: Authorization
           in: header
           required: true
           schema:
             type: string
+            format: "Bearer user_token"
       responses:
         '200':
-          description: Successful logout
+          description: OK
           content:
-            application
-
+            application/json:
+              example:
+                message: "Logout successful"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: "Internal server error. (Could occur under special circumstances)"
 
 
 components:
