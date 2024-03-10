@@ -13,6 +13,13 @@ paths:
           application/xml:
             schema:
               $ref: '#/components/schemas/Invoice'
+            examples:
+              validXML:
+                value: |
+                  <!-- Your valid XML content goes here -->
+              invalidXML:
+                value: |
+                  <InvalidXML>Not conforming to the schema</InvalidXML>
       responses:
         '200':
           description: Successful validation
@@ -24,12 +31,12 @@ paths:
                   AUNZ_PEPPOL_1_1_10: []
                   AUNZ-UBL_1_1_10: []
         '400':
-          description: Bad Request - Invalid XML data
+          description: Bad Request - Invalid XML data or schema mismatch
           content:
             application/json:
               example:
                 successful: false
-                reason: 'XML not valid'
+                reason: 'Invalid XML data or schema mismatch'
         '500':
           description: Internal Server Error
           content:
@@ -39,53 +46,37 @@ paths:
       headers:
         Content-Type: application/xml
 
-  /api/generate/html:
+  /api/validate/html:
     post:
-      summary: Generate HTML version of the invoice
-      description: Generate an HTML representation of the invoice.
+      summary: Validate XML invoice and generate HTML report
+      description: Validate invoice in XML format and return errors as an HTML file.
       requestBody:
         required: true
         content:
           application/xml:
             schema:
               $ref: '#/components/schemas/Invoice'
+            examples:
+              validXML:
+                value: |
+                  <!-- Your valid XML content goes here -->
+              invalidXML:
+                value: |
+                  <InvalidXML>Not conforming to the schema</InvalidXML>
       responses:
         '200':
-          description: Successful HTML generation
+          description: Successful validation
           content:
             text/html:
-              example: |
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Invoice HTML</title>
-                </head>
-                <body>
-                    <!-- Your HTML content goes here -->
-                    <h1>Your invoice: </h1>
-                    <textarea rows="25" cols="150">
-                        <!-- Include the XML content here -->
-                    </textarea>
-                    <h1>Output</h1>
-                    Your schema was validated against the following two documents:
-                    <div>AUNZ-PEPPOL-validation.sch</div>
-                    <div>AUNZ-UBL-validation.sch</div>
-                    (These documents were taken from: 
-                    <a target="_blank" href="https://github.com/A-NZ-PEPPOL/A-NZ-PEPPOL-BIS-3.0/tree/master/Validation%20documents">here</a>)
-                    <h2>Errors</h2>
-                    <!-- Include error details here -->
-                </body>
-                </html>
+              example:
+                value: '<html>Your HTML report goes here</html>'
         '400':
-          description: Bad Request - Invalid invoice data
+          description: Bad Request - Invalid XML data or schema mismatch
           content:
             application/json:
               example:
                 successful: false
-                reason: 'Invalid invoice data'
+                reason: 'Invalid XML data or schema mismatch'
         '500':
           description: Internal Server Error
           content:
@@ -95,31 +86,137 @@ paths:
       headers:
         Content-Type: application/xml
 
-  /api/generate/pdf:
+  /api/validate/pdf:
     post:
-      summary: Generate PDF version of the invoice
-      description: Generate a PDF representation of the invoice.
+      summary: Validate XML invoice and generate PDF report
+      description: Validate invoice in XML format and return errors as a PDF file.
       requestBody:
         required: true
         content:
           application/xml:
             schema:
               $ref: '#/components/schemas/Invoice'
+            examples:
+              validXML:
+                value: |
+                  <!-- Your valid XML content goes here -->
+              invalidXML:
+                value: |
+                  <InvalidXML>Not conforming to the schema</InvalidXML>
       responses:
         '200':
-          description: Successful PDF generation
+          description: Successful validation
           content:
             application/pdf:
-              example: '<PDF content here>'
+              example:
+                binaryContent: '<link to a sample PDF file or description>'
         '400':
-          description: Bad Request - Invalid invoice data
+          description: Bad Request - Invalid XML data or schema mismatch
           content:
             application/json:
               example:
                 successful: false
-                reason: 'Invalid invoice data'
+                reason: 'Invalid XML data or schema mismatch'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: 'Internal server error. (Should not happen, but just in case it does)'
+      headers:
+        Content-Type: application/xml
 
-# ... (rest of the file remains unchanged)
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Register a user in the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+            example:
+              username: "user_name"
+              password: "really_secure_password"
+      responses:
+        '200':
+          description: Successful registration
+          content:
+            application/json:
+              example:
+                token: '<user_token>'
+        '409':
+          description: Conflict - Username already exists
+          content:
+            application/json:
+              example:
+                error: 'Username already exists'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: 'Internal server error. (Could occur when a user enters null in either fields)'
+
+  /auth/login:
+    post:
+      summary: Log in a user
+      description: Log in if the user is already registered within the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+            example:
+              username: "user_name"
+              password: "really_secure_password"
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              example:
+                token: '<user_token>'
+        '401':
+          description: Unauthorized - Invalid username or password
+          content:
+            application/json:
+              example:
+                error: 'Invalid username or password'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: 'Internal server error. (Could occur when a user enters null in either fields)'
+
+  /auth/logout:
+    post:
+      summary: Log out a user
+      description: Log out of the service by invalidating the user's token.
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful logout
+          content:
+            application
 
 
 
