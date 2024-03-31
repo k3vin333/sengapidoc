@@ -291,6 +291,108 @@ paths:
             application/json:
               example:
                 message: "Internal server error. (Should not happen, but just in case it does)"
+
+
+
+
+                
+  /logs/get/v2:
+    get:
+      summary: Get logs between specified dates
+      description: Retrieve logs based on the specified start and end dates
+      parameters:
+      - name: adminKey
+        in: header
+        description: Only the admins and developer team of this API should be able to access the routes
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: user_token
+      - name: startDateStr
+        in: query
+        description: Start date and time in the format yyyy-MM-ddTHH:mm in AUSTRALIAN time
+        required: true
+        schema:
+          type: string
+      - name: endDateStr
+        in: query
+        description: End date and time in the format yyyy-MM-ddTHH:mm in AUSTRALIAN time
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Logs retrieved successfully
+          content:
+            application/json:
+              example:
+                logs: []
+        "401":
+          description: Unauthorized - Admin key not provided or invalid
+          content:
+            application/json:
+              example:
+                error: Unauthorized
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: "Internal server error. (Should not happen, but just in case it does)"
+                
+                
+  /auth/change-password/v2:
+    put:
+      summary: Change user password
+      description: Change the password of the authenticated user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPassword:
+                  type: string
+                newPassword:
+                  type: string
+            examples:
+              changePassword:
+                value:
+                  oldPassword: "old_secure_password"
+                  newPassword: "new_secure_password"
+        required: true
+      parameters:
+        - name: Authorization
+          in: header
+          description: The user's authentication token
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            default: user_token
+      responses:
+        "200":
+          description: Password changed successfully
+          content:
+            application/json:
+              example:
+                message: Password changed successfully
+        "401":
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              example:
+                error: Invalid or expired token
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                message: "Internal server error. (Should not happen, but just in case it does)"
+
 components:
   schemas:
     Invoice:
