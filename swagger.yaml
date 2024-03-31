@@ -1,9 +1,12 @@
 ---
 openapi: 3.0.0
 info:
-  title: Your API
+  title: 3000% RETURNS INVOICE VALIDATION 
   version: 1.0.0
 servers:
+# Added by API Auto Mocking Plugin
+- description: SwaggerHub API Auto Mocking
+  url: https://virtserver.swaggerhub.com/K3VINALT/new/1.0.0
 - url: https://virtserver.swaggerhub.com/Z5450330/API-validation/1.0.0
   description: SwaggerHub API Auto Mocking
 paths:
@@ -295,7 +298,6 @@ paths:
 
 
 
-                
   /logs/get/v2:
     get:
       summary: Get logs between specified dates
@@ -309,7 +311,7 @@ paths:
         explode: false
         schema:
           type: string
-          default: user_token
+          default: adminKey
       - name: startDateStr
         in: query
         description: Start date and time in the format yyyy-MM-ddTHH:mm in AUSTRALIAN time
@@ -328,7 +330,20 @@ paths:
           content:
             application/json:
               example:
-                logs: []
+                [
+                  {
+                      "id": "unique ID",
+                      "requestMethod": "POST",
+                      "requestUrl": "/auth/login",
+                      "requestTimestamp": " yyyy-MM-ddTHH:mm"
+                  },
+                  {
+                      "id": "unique ID",
+                      "requestMethod": "POST",
+                      "requestUrl": "/auth/login",
+                      "requestTimestamp":  yyyy-MM-ddTHH:mm "
+                  }
+                ]
         "401":
           description: Unauthorized - Admin key not provided or invalid
           content:
